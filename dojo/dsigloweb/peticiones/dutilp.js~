@@ -1,0 +1,729 @@
+dojo.provide("dsiglo.peticiones.dutilp");
+
+dojo.declare(
+"dutilp",null,
+{
+	getAge: function (d1,d2) //YYYY/MM/DD
+	{
+		var diff = Math.abs(d2.getTime()  - d1.getTime());
+		return Math.ceil( diff / (1000 * 3600 * 24) );	
+	},
+	hoynf: function () 
+	{
+		var today = new Date();
+		return today;	
+	},
+	hoyms: function () 
+	{
+		var today = new Date();
+		return Date.parse(today);	
+	},
+	hoy: function ()
+	{
+		var today = new Date();
+		var dd = today.getDate();
+		var mm = today.getMonth()+1; //January is 0!
+		var yyyy = today.getFullYear();
+		
+		if(dd<10) {
+		    dd='0'+dd
+		} 
+		
+		if(mm<10) {
+		    mm='0'+mm
+		} 
+		
+		today = dd+'/'+mm+'/'+yyyy;
+		return today;
+	},
+	convfecha: function (d1) //DD/MM/YYYY to yyyymmdd
+	{
+		var ano = d1.substring(6,10);
+		var mes = d1.substring(3,5);
+		var dia = d1.substring(0,2);
+		return ano+mes+dia;
+	},	
+	sum15fecha: function (d1) //DD/MM/YYYY
+	{
+		var ano = d1.substring(6,10);
+		var mes = d1.substring(3,5);
+		var dia = d1.substring(0,2);
+		var sum = parseInt(dia);
+		if( (parseInt(dia) - parseInt(15))<0 )
+		{
+			sum = sum + parseInt(15);
+			mes = mes - parseInt(1);
+		}
+		else
+		{
+			sum = sum - parseInt(15);
+		}
+		
+		//console.log("ini1"+ano+'/'+mes+'/'+dia+'.Suma:'+sum);
+		if( mes == "02" )
+		{
+			if( sum>28)
+			{
+				sum=sum-28;
+				mes=parseInt(mes)-parseInt(1);
+			}
+			//console.log("ini3"+ano+'/'+mes+'/'+dia+'.Suma:'+sum);
+		}
+		else if( mes%2 == 0 ) // 30 dias
+		{
+			if( sum>30)
+			{
+				sum=sum-30;
+				mes=parseInt(mes)-parseInt(1);
+				if( parseInt(mes)>12 )
+				{ 
+					mes = "1";
+					ano = parseInt(ano) - parseInt(1);
+				}				
+			}
+			//console.log("ini4"+ano+'/'+mes+'/'+dia+'.Suma:'+sum);
+		}
+		else
+		{
+			if( sum>31)
+			{
+				sum=sum-31;
+				mes=parseInt(mes)-parseInt(1);
+				if( parseInt(mes)>12 )
+				{ 
+					mes = "1";
+					ano = parseInt(ano) - parseInt(1);
+				}		
+			}
+			//console.log("ini5"+ano+'/'+mes+'/'+dia+'.Suma:'+sum);
+		}
+		dia=sum;
+		dia=parseInt(dia);
+		mes=parseInt(mes);
+		ano=parseInt(ano);
+		if( parseInt(dia)<10 ) dia = "0" +dia;
+		if( parseInt(mes)<10 ) mes = "0" +mes;
+		//console.log("ini6"+ano+'/'+mes+'/'+dia+'.Suma:'+sum);
+		return ano+mes+dia; 
+	},
+	vdni: function ( dni, campo ) 
+	{
+		if( !isNaN(dni) && isFinite(dni) )
+		{
+			//Generar letra			
+			//console.log("numero");
+			numero = dni;
+		  	numero = numero % 23;
+		   letra='TRWAGMYFPDXBNJZSQVHLCKET';
+		   letra=letra.substring(numero,numero+1);
+		  	campo.set("value",dni+letra,false);
+		}
+		else if( dni[0]=='X' || dni[0]=='Y' || dni[0]=='Z')
+		{
+			//console.log("NIE");
+			//console.log(dni.substr(1,dni.length-1));
+			if( dni[0]=='X'){ dni2='0'+dni.substr(1,dni.length-1); }
+			if( dni[0]=='Y'){ dni2='1'+dni.substr(1,dni.length-1); }
+			if( dni[0]=='Z'){ dni2='2'+dni.substr(1,dni.length-1); }
+			//console.log(dni2);
+			//console.log(dni2[dni2.length-1]);
+			if( !isNaN(dni2[dni2.length-1]) )
+			{
+				numero = dni2;
+			  	numero = numero % 23;
+			   letra='TRWAGMYFPDXBNJZSQVHLCKET';
+			   letra=letra.substring(numero,numero+1);
+			  	campo.set("value",dni+letra,false);
+			}
+			else
+			{
+				//Validad letra
+				numero = dni2.substr(0,dni.length-1);
+				//console.log(numero);
+		   	let = dni2.substr(dni2.length-1,1);
+				//console.log(let);
+		   	numero = numero % 23;
+		   	letra='TRWAGMYFPDXBNJZSQVHLCKET';
+		   	letra=letra.substring(numero,numero+1);
+		   	if (letra!=let) 
+		   	{
+		   		//campo.set('disabled',false);
+					dni = dni.substr(0,dni.length-1);
+					campo.set('value',dni+letra,false);	
+		   	}
+		   }
+		}
+		else 
+		{
+			//Validad letra
+			numero = dni.substr(0,dni.length-1);
+		   let = dni.substr(dni.length-1,1);
+		   numero = numero % 23;
+		   letra='TRWAGMYFPDXBNJZSQVHLCKET';
+		   letra=letra.substring(numero,numero+1);
+		   if (letra!=let) 
+		   {
+		   	//campo.set('disabled',false);
+				dni = dni.substr(0,dni.length-1);
+				campo.set('value',dni+letra,false);	
+		   }
+		}
+	},
+	clave: function( campo )
+	{
+		letra='TWAGMYFPDX';
+      numero = Math.floor((Math.random() * 100000000)).toString();
+      resultado = numero[4] + letra[numero[1]] + numero[6] + letra[numero[3]] + numero[0] + letra[numero[5]] + numero[2];
+      campo.set('value',resultado);
+	},
+	ltarjetas: function( tipocampo, pdato )
+	{
+		console.log("LTARJETAS_Tipo:"+tipocampo+"-Longitud:"+pdato);
+		if( tipocampo=='N') //entero
+		{
+			return "\\d{"+pdato+"}";
+		}
+		else if( tipocampo=='T') //Texto
+		{
+			return "\\w{1,"+pdato+"}";
+		}
+		else if( tipocampo=='X') //Texto Fijo
+		{
+			return "\\w{1,"+pdato+"}";
+		}
+		else if( tipocampo=='-') //Respetar texto
+		{
+			return "\\w{1,"+pdato+"}";
+		}
+		else if( tipocampo=='F') //Fecha
+		{
+			return "(0[1-9]|[12][0-9]|3[01])[- \\/.](0[1-9]|1[012])[- \\/.](19|20)\\d\\d";
+		}
+		else if( tipocampo=='C') //Cualitativa
+		{
+			return "\\w{"+pdato+"}";
+		}
+		else if( tipocampo=='T1') //T1
+		{
+			//xxxxxx-x-xxx
+			return "(\\d{10,})";
+		}
+		else if( tipocampo=='T2') //T2
+		{
+			//xxxx-xxxx-xxxx-xxxx ó xxxx-xxxx-x
+			return "(\\d{9})|(\\d{16})";
+		}
+		else if( tipocampo=='T3') //T3
+		{
+			//xx-xxxxxxxxxx
+			return "(\\d{12,})";
+		}
+		else if( tipocampo=='T4') //T4
+		{
+			//xx/xxxxxxxxx/xx
+			return "(\\d{14,})";
+		}
+		else if( tipocampo=='T5') //T5
+		{
+			//xxxx-xxxx o xxxx-xxxx-xxxx-xxxx
+			return "(\\d{8})|(\\d{16})";
+			
+		}
+		else if( tipocampo=='T6') //T6
+		{
+			//xxxx-xxxxxxxx-xxxxxx
+			// o xxxx
+			//o xxxxxx-xxxxxx-xxxxxxxx-xxxx
+			return "(\\d{18})|\\d{4})|(\\d{24})";
+		}
+		else if( tipocampo=='T7') //T7
+		{
+			//xx/xxxxxxxxx/xx
+			return "(\\d{13,})";
+		}
+		else if( tipocampo=='T8') //T8
+		{
+			//xxxx-xxxx-xxxx
+			//xxxx-xxxx-xxxx-xxxxxx
+			return "(\\d{12})|(\\d{18})";
+		}
+		else if( tipocampo=='LF') //Luhn Financiera
+		{
+			return "\\d{1,"+pdato+"}";
+		}
+		else if( tipocampo=='LS') //Luhn Sanitaria
+		{
+			return "\\d{1,"+pdato+"}";
+		}
+		else if( tipocampo=='LX') //Caja Salud
+		{
+			return "\\d{1,"+pdato+"}";
+		}			
+	},
+	vtarjetas: function( tipocampo, pdato, longitud )
+	{
+		console.log("VTARJETAS_Campo:"+tipocampo+"-Valor:"+pdato+"-Longitud:"+longitud);
+		if( tipocampo=='N') //entero
+		{
+			if(isNaN(pdato))
+			{
+				return false;			
+			}
+			else
+			{
+				return true;
+			}
+		}
+		else if( tipocampo=='T') //Texto
+		{
+			return true;
+		}
+		else if( tipocampo=='X') //Texto Fijo
+		{
+			return true;
+		}
+		else if( tipocampo=='-' || tipocampo=='' || tipocampo==null ) //Respetar texto
+		{
+			return true;
+		}
+		else if( tipocampo=='F') //Fecha
+		{
+			return true;
+		}
+		else if( tipocampo=='C') //Cualitativa
+		{
+			return true;
+		}
+		else if( tipocampo=='T0') //T0
+		{
+			//ABCD123456789012
+			/*var
+			    I,L:integer;
+			    T:string;
+			    C:char;
+			    K1,K2:integer;
+			begin
+			result:='';
+			T:='';
+			L:=Length(S);
+			for I:=1 to L do
+			    begin
+			    C:=Upcase(S[I]);
+			    if C in ['0'..'9','A'..'Z'] then T:=T+C else
+			    if not (S[I] in [' ','-','.','/']) then exit;
+			    end;
+			
+			// while (length(t)<16) do T:='0'+T;
+			L:=Length(T);
+			if L=16 then
+			    begin
+			    K1:=(byte(T[1])-62)*30+Byte(T[2])-54;
+			    K2:=(byte(T[3])-62)*30+Byte(T[4])-54;
+			    if (K1>100) and (K2>100) then
+				begin
+				T:=ID+IntToStr(K1)+IntToStr(K2)+Copy(T,5,12);
+				L:=24;
+				end;
+			    end;
+			if (L=24) {and LuhnF(T)} then result:=T;  // ¿¿Checksum??
+			end;*/
+			var k1=0;
+			var k2=0;
+			var ndato='';
+			dato = String(pdato).replace(/[^0-9A-Z]/g, ''); //Le quito todo lo que no sean numeros
+	     	var tam = dato.length;
+	     	if( tam==16 )
+	     	{
+	     		k1=((parseInt(dato[0].charCodeAt(0))-62)*30)+(parseInt(dato[1].charCodeAt(0))-54); 
+	     		k2=((parseInt(dato[0].charCodeAt(3))-62)*30)+(parseInt(dato[4].charCodeAt(0))-54);
+	     		if( k1>100 && k2>100 )
+	     		{
+					ndato=longitud+k1+k2+dato.substr(4,12);
+					tam=ndato.length;	     		
+	     		}
+	     	}
+			if (tam==24 && this.vluhns(ndato))
+			{		      
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else if( tipocampo=='T1') //T1
+		{
+			//xxxxxx-x-xxx
+			/*
+			var
+			    I,L:integer;
+			    T:string;
+			begin
+			result:='';
+			T:='';
+			L:=Length(S);
+			for I:=1 to L do
+			    begin
+			    if (S[I] in ['0'..'9']) then T:=T+S[I] else
+			    if not (S[I] in [' ','-','.','/']) then exit;
+			    end;
+			L:=Length(T);
+			if L in [10..18] then
+			    begin-
+			    for I:=1 to 18-L do Insert('0',T,7);
+			    T:=ID+T;
+			    L:=24;
+			    end;
+			if (L=24) and LuhnS(T) then result:=T;
+			end;*/
+			dato = String(pdato).replace(/[^0-9]/g, ''); //Le quito todo lo que no sean numeros
+	     	var tam = dato.length;
+	     	var ndato='';
+	     	if( tam>9 && tam<19 )
+	     	{
+	     		ndato = dato.substr(0, 6);
+	     		for(var i = 1; i <= (18-tam); i++) //aqui le meto ceros 
+	     		{
+	     			//Le meto ceros desde la posicion 8 a dato
+	     			 ndato += '0';
+	     		}
+	     		ndato = ndato + dato.substr(6, tam);
+	     		ndato=longitud+ndato;	    
+	     	}
+	     	if (ndato.length==24 ) 
+			{
+				if( this.vluhns(ndato) )
+				{
+					return true;
+				}
+				else{ return false;}						      
+				
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else if( tipocampo=='T2') //T2
+		{
+			// Comprueba tarjetas de tipo 2 (xxxx-xxxx-xxxx-xxxx ó xxxx-xxxx-x)
+			// Devuelve T24 si OK
+			/*function CheckTarjeta2(const ID,S:string):string;
+			var
+			    I,L:integer;
+			    T:string;
+			begin
+			result:='';
+			T:='';
+			L:=Length(S);
+			for I:=1 to L do
+			    begin
+			    if (S[I] in ['0'..'9']) then T:=T+S[I] else
+			    if not (S[I] in [' ','-','.','/']) then exit;
+			end;
+			L:=Length(T);
+			case L of
+			    9: begin
+			       if not LuhnS(T) then exit;
+			       T:=ID+'0000000'+Copy(T,1,8)+'00'+T[9];
+			       L:=Length(T);
+			       end;
+			   16: begin
+			       if not LuhnS(T) then exit;
+			       T:=ID+'0'+Copy(T,10,3)+'000'+Copy(T,1,8)+'00'+T[9];
+			       L:=Length(T);
+			       end;
+			end;
+			if (L=24) and LuhnS(T) then result:=T;
+			end;*/
+		  pdato = String(pdato).replace(/[^0-9]/g, ''); //Le quito todo lo que no sean numeros
+	     var parity = pdato.length;
+	     var idato = 0;
+	     //console.log("Paridad:"+parity);
+	     if( parseInt(parity, 10)==9 )
+	     {
+	     		if( this.vluhns(pdato) )
+	     		{
+	     			//T:=ID+'0000000'+Copy(T,1,8)+'00'+T[9];
+	     			var ndato=longitud+'0000000'+pdato.substr(0,8)+'00'+pdato.substr(8,1);
+					if (ndato.length==24 && this.vluhns(ndato))
+					{		      
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+	     		}
+	     		else
+	     		{ 
+	     			return false;
+	     		}
+	     		
+	     }
+	     else if( parseInt(parity, 10)==16 )
+	     {
+	     	   if( this.vluhns(pdato) )
+	     	   { 
+	     	     //T:=ID+'0'+Copy(T,10,3)+'000'+Copy(T,1,8)+'00'+T[9];
+	     	   	var ndato=longitud+'0'+pdato.substr(9,3)+'000'+pdato.substr(0,8)+'00'+pdato.substr(8,1);	     	   	
+					if (ndato.length==24 && this.vluhns(ndato))
+					{		      
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+	     	   }
+	     	   else
+	     	   {
+	     	   	return false;
+	     	   }
+	     }
+	     else 
+	     {
+	     		return false;	
+	     }	
+		}
+		else if( tipocampo=='T3') //T3
+		{
+			//xx-xxxxxxxxxx
+			/*
+			var
+			    I,L:integer;
+			    T:string;
+			begin
+			result:='';
+			T:='';
+			L:=Length(S);
+			for I:=1 to L do
+			    begin
+			    if (S[I] in ['0'..'9']) then T:=T+S[I] else
+			    if not (S[I] in [' ','-','.','/']) then exit;
+			    end;
+			L:=Length(T);
+			if (L=16) and (Length(ID)=8) then T:=ID+T;
+			L:=Length(T);
+			if L=12 then
+			    begin
+			    insert('00',T,12);
+			    T:=ID+'0000'+T;
+			    L:=24;
+			    end;
+			if (L=24) and LuhnS(T) then result:=T;
+			end;*/
+			dato = String(pdato).replace(/[^0-9]/g, ''); //Le quito todo lo que no sean numeros
+	     	var tam = dato.length;
+	     	var ndato='';
+	     	if( tam==16 && longitud.length==8 )
+	     	{
+	     		dato=longitud+dato;
+	     	}
+	     	tam = dato.length;
+			if( tam==12 )
+			{
+				ndato=dato.substr(0,12)+'00';//+dato.substr(11,1);
+				ndato=longitud+'0000'+ndato;
+				tam = ndato.length;
+			}
+	     	if (tam==24 && this.vluhns(ndato))
+			{		      
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else if( tipocampo=='T4') //T4
+		{
+			//xx/xxxxxxxxx/xx
+			/*
+			var I,J,L:integer;
+			    T:string;
+			begin
+			result:='';
+			T:='';
+			L:=Length(S);
+			for I:=1 to L do
+			    begin
+			    if (S[I] in ['0'..'9']) then T:=T+S[I] else
+			    if not (S[I] in [' ','-','.','/']) then exit else T:=T+'/';
+			    end;
+			L:=Length(T);
+			J:=NCampos(T,'/')-1;
+			
+			case J of
+			     0: if (L>4) then T:=Format('%s/%s/%s',[T[1]+T[2],Copy(T,3,L-4),T[L-1]+T[L]])
+				else	      T:='';
+			     1: begin
+				I:=Length(ExtraeCampo(T,1,'/'));
+				if (I<>2) then T:='';
+				end;
+			     2: begin
+				I:=Length(ExtraeCampo(T,1,'/'));
+				L:=Length(ExtraeCampo(T,3,'/'));
+				if (I<>2) or (L>2) then T:='';
+				end;
+			     else T:='';
+			     end;
+			L:=Length(T);
+			if (L>15) then T:='';
+			result:=T;
+			end;*/
+			dato = String(pdato).replace(/[^0-9]/g, ''); //Le quito todo lo que no sean numeros
+	     	var tam = dato.length;
+	     	var tok = dato.split('/');
+	     	var tams = tok.length;
+	     	switch(tams) {
+			    case 0:
+			         /*if (L>4) then T:=Format('%s/%s/%s',[T[1]+T[2],Copy(T,3,L-4),T[L-1]+T[L]])
+						else	      T:='';*/
+						if( tam>4 )
+						{
+							dato=dato[0]+dato[1]+'/'+dato.substr(2,tam-5)+'/'+dato[tam-2]+dato[tam-1];
+							return true;
+						}
+						else
+						{
+							dato='';
+							return false;
+						}
+			        break;
+			    default:
+			    		return false;
+			    		break;
+			}
+		}
+		else if( tipocampo=='T5') //T5
+		{
+			//xxxx-xxxx o xxxx-xxxx-xxxx-xxxx
+			/*
+			var
+			    I,L:integer;
+			    T,ZL:string;
+			begin
+			result:='';
+			T:='';
+			L:=Length(S);
+			for I:=1 to L do
+			    begin
+			    if (S[I] in ['0'..'9']) then T:=T+S[I] else
+			    if not (S[I] in [' ','-','.','/']) then exit;
+			    end;
+			L:=Length(T);
+			ZL:=T;
+			if (L=16) and (Length(ID)=8) then T:=ID+T;
+			L:=Length(T);
+			
+			if (L=24) and LuhnS(T) then result:=T              // Tarjetas Nuevas
+			else if LuhnY(ZL) then result:='80348299'+ZL;      // Tarjetas Antiguas
+			end;
+			*/
+			dato = String(pdato).replace(/[^0-9]/g, ''); //Le quito todo lo que no sean numeros
+	     	var tam = dato.length;
+	     	var ndato=dato;
+	     	if( tam==16 && longitud.length==8 )
+	     	{
+	     		dato=longitud+dato;
+	     	}
+	     	tam = dato.length;
+	     	if (tam==24 && this.vluhns(dato))
+			{		      
+				return true;
+			}
+			else
+			{
+				return false;
+			}	
+		}
+		else if( tipocampo=='LF') //Luhn Financiera
+		{			
+        return this.vluhnf( pdato );
+		}
+		else if( tipocampo=='LS') //Luhn Sanitaria
+		{
+			return this.vluhns( pdato );
+		}
+		else if( tipocampo=='LX') //Caja Salud
+		{
+			
+		}
+	},
+	vgenerali: function( dato )
+	{
+		//console.log("Generali:"+dato);
+			
+	},
+	vluhnf: function( dato )
+	{
+		/* var I,L,C,CHK:integer;
+ 		F:boolean;
+		begin
+			F:=false;
+			CHK:=0;
+			L:=Length(S);
+			for I:=0 to L-1 do
+ 			begin
+ 				C:=ord(S[L-I])-48;
+ 				F:=C in [0..9];
+ 				if not F then break;
+ 				if odd(I) then C:=C*2;
+ 				inc(CHK,C mod 10);
+ 				inc(CHK,C div 10);
+ 			end;
+			result:=F and ((CHK mod 10)=0);
+		end;*/
+	  dato = String(dato).replace(/[^0-9]/g, ''); //Le quito todo lo que no sean numeros
+     var sum = 0;
+     var tam = 0;
+     tam = dato.length-1;
+     for(var i = 0; i <= (tam); i++) 
+     { 
+         digit = parseInt(dato[tam-i]);
+         if(i % 2 != 0) 
+         {
+             digit *= 2;
+         }
+  			sum+=digit%10;
+         sum+=Math.floor(digit/10);
+     }
+     return ((sum % 10) == 0);	
+	},
+	vluhns: function( dato )
+	{
+		/* var I,L,C,CHK:integer;
+ 		F:boolean;
+		begin
+			F:=false;
+			CHK:=0;
+			L:=Length(S);
+			for I:=0 to L-1 do
+ 			begin
+ 				C:=ord(S[L-I])-48;
+ 				F:=C in [0..9];
+ 				if not F then break;
+ 				if odd(I) then C:=C*2;
+ 				inc(CHK,C);
+ 			end;
+			result:=F and ((CHK mod 10)=0);
+		end;*/
+	  dato = String(dato).replace(/[^0-9]/g, ''); //Le quito todo lo que no sean numeros
+     var sum = 0;
+     var tam = 0;
+     tam = dato.length-1;
+     for(var i = 0; i <= (tam); i++) 
+     { 
+         digit = parseInt(dato[tam-i]);
+         if(i % 2 != 0) 
+         {
+             digit = digit * 2;
+         }
+         sum = sum + digit;
+         //console.log("Sum:"+sum);
+     }
+     return ((sum % 10) == 0);	
+	}
+}	
+);

@@ -1,0 +1,167 @@
+dojo.provide("dsiglo.peticiones.dimprimir");
+dojo.require("dijit.Dialog");
+dojo.require("dijit.layout.ContentPane");
+dojo.require("dojo.data.ItemFileReadStore");
+dojo.require("dojox.widget.Standby");
+
+dojo.declare(
+"dimprimir",null,
+{
+	dimprimircp1:null,
+	padreClass:null,
+	dimprimir: function()
+	{
+		dimprimirdlg = new dijit.Dialog({
+         title: "Volex",
+         style: "background:#fff; width: 1024px; height: 768px;",
+         content: dimprimircp1,
+         id: "dimprimirdlgimpr"
+     });
+	},
+	contenedor1: function ()
+	{
+		padreClass = this;
+		var dimprimircontenido = "<div id='printableArea'>";
+		dimprimircontenido = dimprimircontenido + "<div id='zona1'>";
+		dimprimircontenido = dimprimircontenido + "<div class='block'>";
+  		dimprimircontenido = dimprimircontenido + "<label id='campo'>Paciente</label>";
+  		dimprimircontenido = dimprimircontenido + "<label id='valor1'>[APE1] [APE2], [NOMBRE]</label>";
+  		dimprimircontenido = dimprimircontenido + "<label id='campo'>Nº Muestra</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='valor2'>[SID]</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='campo'>Sexo</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='valor2'>[SEXO]</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='campo'>F. Nacimiento</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='valor3'>[FNAC]-[EDAD]</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='campo'>D.N.I</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='valor2'>[PID]</label>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div class='block'>";
+	   dimprimircontenido = dimprimircontenido + "<label id='campo'>Teléfono</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='valor2'>[EXTRA0]</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='campo'>Doctor</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='valor2'>[DEMO2]</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='campo'>Procedencia</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='valor2'>[DEMO5]</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='campo'>Origen</label>";
+	   dimprimircontenido = dimprimircontenido + "<label id='valor2'>[DEMO1]</label>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div class='block'>";
+  		dimprimircontenido = dimprimircontenido + "<label id='campo1'>Responsable de la extracción:</label>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div id='space'></div>";
+		dimprimircontenido = dimprimircontenido + "<div class='block'>";
+  		dimprimircontenido = dimprimircontenido + "<label id='valor1'>(Nombre y Firma) Fecha: [FECHA] </label>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div id='zona2'>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>Extracción General</label>";
+		dimprimircontenido = dimprimircontenido + "<div class='block'>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo2'>Tubos Hematología</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo'>Tubos VSG</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo2'>Tubos Hematología(PCR)</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo'>Tubos Suero</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo2'>Tubos Coagulación</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo2'>Tubos Heparina Litio</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo2'>Tubos Fluoruro</label>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div id='zona3'>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>Orinas</label>";
+		dimprimircontenido = dimprimircontenido + "<div class='block'>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo2'>Orina Basal</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo'>Orina 24h</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo2'>Vol. 24h</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo'>Peso</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='valor4'><div id='caja'></div></label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo2'>Talla</label>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div id='zona4'>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>Muestras Microbiología</label>";
+		dimprimircontenido = dimprimircontenido + "<div id='space'></div>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div id='zona5'>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>RESGUARDO RECOGIDA DE RESULTADOS</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>C.Registro:<b>[PWD]</b> NºInforme: <b>[SID]</b></label>";
+		dimprimircontenido = dimprimircontenido + "<div class='block'>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo3'>El informe de resultados de análisis es CONFIDENCIAL con objeto de garantizar y proteger sus datos personales, y en cumplimiento de la L.O 15/1999 de 13 de Diciembre.";
+		dimprimircontenido = dimprimircontenido + " Por ello le solicitarán a usted para recogerlo su DNI. En caso de imposibilidad, deberá autorizar a la persona que vaya a recogerlo, rellenando para ello los siguientes datos, y acompañando a esta autorización el DNI de la persona y original o fotocopia del DNI de la persona que autoriza.</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo4'>Autorizo a D./Dña:</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>con D.N.I.:</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo5'>a recoger el Informe de mis Resultados Analíticos.</label>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div class='block'>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>Nombre del Paciente:</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>[NOMBRE] [APE1] [APE2]</label>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>Firma:</label>";
+		dimprimircontenido = dimprimircontenido + "<div id='space'></div>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "<div id='zona6'>";
+		dimprimircontenido = dimprimircontenido + "<label id='campo1'>Los interesados quedan informados y aceptan la incorporación de los datos recabados a los ficheros del Grupo Unilabs, cuyo listado de laboratorios asociados puede consultar en www.unilabs.es. Dichos datos serán tratados con la finalidad de gestionar sus análisis e historial clínico. Se conservarán con carácter confidencial y podrán ser comunicados, en su caso, a su compañía aseguradora para la solicitud de autorizaciones de análisis clínicos y su posterior facturación, así como a las Administraciones Públicas que estipula la Ley. Puede ejercitar sus derechos de acceso, rectificación, cancelación y oposición en Unilabs C/ Juan Esplandiú, Nº 15 - 28007 Madrid.</label>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+		dimprimircontenido = dimprimircontenido + "</div>";
+
+		dimprimircp1 = new dijit.layout.ContentPane({
+        id: "contdimprimir",
+        content: dimprimircontenido,
+		},dojo.doc.createElement('div'));
+	   document.body.appendChild(dimprimircp1.domNode);
+	},
+	bimprimir:function () {
+		imprimir = new dijit.form.Button({
+			label: "Imprimir",
+			type: "button",
+			onClick: function()
+			{
+			     	var restorepage = document.body.innerHTML;
+				  	var printcontent = document.getElementById("printableArea").innerHTML;
+					document.body.innerHTML = printcontent;
+					window.print();
+					document.body.innerHTML = restorepage;
+
+			     padreClass.ocultar();
+	      }
+		});
+		dimprimircp1.domNode.appendChild(imprimir.domNode);
+	},	
+	bcancelar:function () {
+		dimprimircancelar = new dijit.form.Button({
+			label: "Cancelar",
+			type: "button",
+			onClick: function(){
+	        	   padreClass.ocultar();
+	        }
+		});
+		dimprimircp1.domNode.appendChild(dimprimircancelar.domNode);
+	},
+	inicio: function () 
+	{
+		this.contenedor1();
+		dimprimircp1.domNode.appendChild(dojo.doc.createElement("p"));
+	   this.bimprimir();
+	   this.bcancelar();
+	   dimprimircp1.startup();
+	   this.dimprimir();
+	},
+	mostrar: function()
+	{
+		dimprimirdlg.show();	
+	},
+	ocultar: function () 
+	{
+		dimprimirdlg.hide();	
+	}
+}
+);

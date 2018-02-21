@@ -1,0 +1,1809 @@
+dojo.provide("dsiglo.peticiones.peticiones");
+dojo.require("dijit.layout.ContentPane");
+dojo.require("dijit.form.Form");
+dojo.require("dojox.widget.Standby");
+dojo.require("dijit.form.ValidationTextBox");
+dojo.require("dijit.form.DateTextBox");
+dojo.require("dijit.form.FilteringSelect");
+dojo.require("dojo.data.ItemFileReadStore");
+dojo.require("dojo.data.ItemFileWriteStore");
+dojo.require("dojo.cookie");
+dojo.require("dijit.form.ComboBox");
+dojo.require("dojox.form.ListInput");
+dojo.require("dijit.form.Button");
+dojo.require("dijit.ConfirmDialog");
+dojo.require("dojo.dom");
+dojo.require("dojo.data.ObjectStore");
+dojo.require("dojo.store.Memory");
+dojo.require("dsiglo.peticiones.dutilp");
+dojo.require("dsiglo.peticiones.ddemo");
+dojo.require("dsiglo.peticiones.dextra");
+dojo.require("dsiglo.peticiones.dbuscar");
+dojo.require("dsiglo.peticiones.dxml");
+dojo.require("dijit.form.SimpleTextarea");
+dojo.require("dijit.TooltipDialog");
+dojo.require("dijit.popup");
+dojo.require("dojo.on");
+dojo.require("dojox.validate.regexp");
+			    
+dojo.declare(
+"peticiones",null,
+{
+	lf1:null,
+	wbusc:null,
+	wutil:null,
+	wdemo:null,
+	wextra:null,
+	wsoap:null,
+	padrePeticiones:null,
+	tipof1:null,
+	tipof2:null,
+	tipof3:null,
+	tipof4:null,
+	tipof5:null,
+	tipof6:null,
+	tipof7:null,
+	tipof8:null,
+	longitudf1:null,
+	longitudf2:null,
+	longitudf3:null,
+	longitudf4:null,
+	longitudf5:null,
+	longitudf6:null,
+	longitudf7:null,
+	longitudf8:null,
+	beep:null,
+	vanti:null,
+	standby:null,
+	tarifa:null,
+	ind:1,
+	anterior:null,
+	numtar:null,
+	olddemo1:null,
+	demostopStore:null,
+	vviejo:null,
+	contenedor:function () 
+	{
+		padrePeticiones = this;
+		cp1 = new dijit.layout.ContentPane({
+        region: "top",
+        id: "contform",
+        content: "<div style='text-align: center;'><b>Creación de Peticiones</b></div>"
+		},dojo.doc.createElement('div'));
+		nodo=document.getElementById("contenedorcentro");
+	   nodo.appendChild(cp1.domNode); 
+	},
+	dinfo:function () 
+	{
+		dialogo = new dijit.ConfirmDialog({
+            // Dialog title
+            title: "Advertencia",
+        });
+	},
+	dform:function () 
+	{
+		form = new dijit.form.Form({
+			id: "formsol",
+			encType: "multipart/form-data",
+			action: "",
+			method: "POST"
+	   }, dojo.doc.createElement('div'));
+      cp1.domNode.appendChild(form.domNode);
+	},
+	esid:function () 
+	{
+		Barray:null,
+		sid = new dijit.form.ValidationTextBox({
+        name:"sid",
+        type:"text",
+        id:"sid",
+		  readonly:false,
+		  style: "width:75px;",
+		  required: true,		  
+		  regExp:'\\d{1,15}',
+		  invalidMessage: "Introducir solo números y maximo 15",
+     	  missingMessage:"Falta analisis",
+     	  onChange: function()
+     	  {
+     	  		wdemo.vsid();
+     	  },
+        onKeyUp:function(event)
+        {
+       		if(event.keyCode==13)
+       		{
+					if( pwd.get('value').length<1 )
+					{
+						wutil.clave(pwd);					
+					}
+       			pid.focus();
+       		}
+        }
+	   }, dojo.doc.createElement('input'));
+	   form.domNode.appendChild(sid.domNode);
+	   dojo.place('<label for="sid">Análisis: </label>', dojo.byId('widget_sid'), 'before');
+	},
+	efecha:function () 
+	{
+		fecha = new dijit.form.DateTextBox({
+        	type:"text",
+        	name:"fecha",
+        	id:"fecha",
+        	required:true,
+        	style:"width: 8em;",
+        	lang:"es",
+        	promptMessage: "dd/mm/yyyy",
+    		invalidMessage: "Formato de fecha invalido. Usar dd/mm/yyyy",
+        	displayedValue: wutil.hoy(),
+        onKeyUp:function(event)
+        {
+       		if(event.keyCode==13)
+       		{
+       			pid.focus();
+       		}
+        },
+        onFocus:function () 
+        {
+        	fecha.set('displayedValue',wutil.hoy(),false);	
+        }
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(fecha.domNode);
+   	dojo.place('<label for="sid">Fecha: </label>', dojo.byId('widget_fecha'), 'before');
+	},
+	epid:function () {
+		Barray:null,
+		pid = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"pid",
+        	id:"pid",
+        	required:false,
+			uppercase:true,
+        	style:"width: 9em;",
+        	//regExp:'[XYZ]\\d{7}||\\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]',
+			invalidMessage: "Introducir DNI Válido",
+        	missingMessage:"Falta dni",
+        	onChange: function()
+         {
+         	wdemo.vpid();
+         	wextra.limppaciente();	
+         	wextra.acpaciente();	
+         },
+         onBlur: function () 
+         {
+         	if( pid.get("value") === '' || pid.get("value") === null)
+				{
+					wdemo.genpid();
+				}
+				ape1.focus();
+         },
+       	onKeyUp:function(event)
+       	{
+       		/*if(event.keyCode==113)
+       		{
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+					Barray = [];
+		         Barray[0]=pid.get("value");
+       			wbusc.settipo("pid",Barray);
+       			wbusc.mostrar();
+       		}*/
+       		if(event.keyCode==13)
+       		{
+       			wextra.limppaciente();	
+         		wextra.acpaciente();	       			
+					if( pid.get("value") === '' || pid.get("value") === null)
+					{
+						wextra.limppaciente();
+   					wextra.actpaciente();
+						wdemo.genpid();						
+					}
+					ape1.focus();
+       		}
+       	}
+      }, dojo.doc.createElement('input'));
+	   form.domNode.appendChild(pid.domNode);
+	   dojo.place('<label for="sid">DNI: </label>', dojo.byId('widget_pid'), 'before');
+	},	
+	enombre:function () {
+		Barray:null,
+		nombre = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"nombre",
+        	id:"nombre",
+        	required:true,
+			uppercase:true,
+        	style:"width: 10em;",
+        	missingMessage:"Falta Nombre",
+       	onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					fnac.focus();			
+       		}
+				else if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+       			if( ape1.get("value").length>0 )
+       			{
+		         	Barray[0]=ape1.get("value").toUpperCase();
+		         	if( ape2.get("value").length>0 )
+       				{
+       					Barray[0]+=" ";
+       					Barray[0]+=ape2.get("value").toUpperCase();       					
+       				}
+       				if( nombre.get("value").length>0 )
+       				{
+       					Barray[0]+=" ";
+       					Barray[0]+=nombre.get("value").toUpperCase();       					
+       				}
+		         }
+       			wbusc.settipo("paciente",Barray);
+       			wbusc.mostrar();
+       		}
+       	},
+       	onChange:function () 
+       	{
+       		
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(nombre.domNode);
+   	dojo.place('<label for="sid">Nombre: </label>', dojo.byId('widget_nombre'), 'before');
+   },
+   eape1:function () {
+		Barray:null,
+		ape1 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"ape1",
+        	id:"ape1",
+        	required:true,			
+			uppercase:true,
+        	style:"width: 10em;",
+        	missingMessage:"Falta primer apellido",
+        	onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					ape2.focus();
+       		}
+       		else if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+       			if( ape1.get("value").length>0 )
+       			{
+       				console.log("1");
+		         	Barray[0]=ape1.get("value").toUpperCase();
+		         	if( ape2.get("value").length>0 )
+       				{
+       					Barray[0]+=" ";
+       					Barray[0]+=ape2.get("value").toUpperCase();       					
+       				}
+       				if( nombre.get("value").length>0 )
+       				{
+       					Barray[0]+=" ";
+       					Barray[0]+=nombre.get("value").toUpperCase();       					
+       				}
+		         }
+       			wbusc.settipo("paciente",Barray);
+       			wbusc.mostrar();
+       		}
+       	},
+       	onChange:function () 
+       	{
+       		
+       	}       	
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(ape1.domNode);
+		dojo.place('<label for="sid">Apellido 1: </label>', dojo.byId('widget_ape1'), 'before'); 
+   },
+	eape2:function () {
+		Barray:null,		
+		ape2 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"ape2",
+        	id:"ape2",
+        	required:false,			
+			uppercase:true,
+        	style:"width: 10em;",
+        	missingMessage:"Falta segundo apellido",
+       	onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					nombre.focus();
+       		}
+       		else if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+       			if( ape1.get("value").length>0 )
+       			{
+		         	Barray[0]=ape1.get("value").toUpperCase();
+		         	if( ape2.get("value").length>0 )
+       				{
+       					Barray[0]+=" ";
+       					Barray[0]+=ape2.get("value").toUpperCase();       					
+       				}
+       				if( nombre.get("value").length>0 )
+       				{
+       					Barray[0]+=" ";
+       					Barray[0]+=nombre.get("value").toUpperCase();       					
+       				}
+		         }
+       			wbusc.settipo("paciente",Barray);
+       			wbusc.mostrar();
+       		}
+       	},
+       	onChange:function () 
+       	{
+       		
+       	},    	
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(ape2.domNode);
+   	dojo.place('<label for="sid">Apellido 2:</label>', dojo.byId('widget_ape2'), 'before');	
+	},
+	eedad:function () {
+		edad = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"edad",
+        	id:"edad",
+        	style:"width: 2em;",
+        	disabled:true,
+        	required:true,
+        	missingMessage:"Falta edad",
+        	/*onChange: function()
+	      {
+	       //Calcula fnac
+	      	var vedad = edad.get('value');
+	      	//console.log(vedad);
+	      	var shoy = wutil.hoynf();
+				//console.log(shoy);
+				var dayDiff = dojo.date.add(shoy, "year", parseInt(vedad)*-1);
+ 				//var dayDif f= dojo.date.difference(vfnac,shoy, "year"); 
+ 				console.log(dayDiff);					      	
+	      	fnac.set('value', dayDiff,false );
+	      },*/
+        	onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					sexo.focus();
+       		}
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(edad.domNode);
+   	dojo.place('<label for="sid">Edad: </label>', dojo.byId('widget_edad'), 'before');
+   },
+   efnac:function () {
+	   fnac = new dijit.form.DateTextBox({
+	     	type:"text",
+	     	name:"fnac",
+	     	id:"fnac",
+			style:"width: 8em;",
+			lang:"es",
+	     	required:true,
+			promptMessage: "dd/mm/yyyy",
+    		invalidMessage: "Formato de fecha invalido. Usar dd/mm/yyyy",
+	     	onChange: function()
+	      {
+	      	
+	      	if( fnac.get('value') === '' || fnac.get('value') === null ) {}
+	      	else
+	      	{
+		         //Calcula edad
+		      	var vfnac = fnac.get('value');
+		      	//console.log(vfnac);
+		      	var shoy = wutil.hoynf();
+					//console.log(shoy);
+	 				var dayDiff= dojo.date.difference(vfnac,shoy, "year"); 
+	 				//console.log(dayDiff);					      	
+		      	edad.set('value', parseInt(dayDiff) );
+	      	}
+	      },
+	      onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			cad=fnac.get("displayedValue");
+       			if( cad.search(".")!=-1 )
+       			{
+       				cad=cad.replace(/\./g,'/');
+	       			fnac.set('displayedValue',cad);
+       			}
+					sexo.focus();
+       		}
+       	}
+	   }, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(fnac.domNode);
+   	dojo.place('<label for="sid">F. Nacimiento: </label>', dojo.byId('widget_fnac'), 'before');
+   },
+	esexo:function () {
+		sexo = new dijit.form.ComboBox({
+        	type:"text",
+        	name:"sexo",
+        	id:"sexo",
+        	style:"width: 5em;",
+        	required:true,
+        	searchAttr:"name",
+        	missingMessage:"Falta sexo",
+        	labelAttr: "etiqueta",
+         labelType: "html",
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			sexo.onChange();
+					demo2.focus();
+       		}
+       	},
+       	onFocus:function () 
+       	{
+       		cad=fnac.get("displayedValue");
+    			if( cad.search(".")!=-1 )
+    			{
+    				cad=cad.replace(/\./g,'/');
+       			fnac.set('displayedValue',cad);
+    			}
+       	},
+			onChange:function()
+       	{
+       		wdemo.vsexo();
+       	},
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(sexo.domNode);
+   	dojo.place('<label for="sid">Sexo: </label>', dojo.byId('widget_sexo'), 'before');
+   	//Carga valores de sexo
+   	wdemo.csexo();	   
+   },
+   edemo2:function () { 
+		demo2 = new dijit.form.ComboBox({
+        	type:"text",
+        	name:"demo2",
+        	id:"demo2",
+        	required:false,
+			searchAttr:"busqueda",
+			uppercase:true,
+        	style:"width: 15em;",
+        	labelAttr: "etiqueta",
+         labelType: "html",
+         onChange:function()
+       	{
+       		wdemo.vdemo2();
+       	},
+			onKeyUp:function(event)
+       	{
+       		/*if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+		         Barray[0]=demo2.get("value");
+       			wbusc.settipo("demo2",Barray);
+       			wbusc.mostrar();
+       		}*/
+       		if(event.keyCode==13)
+       		{
+					demo1.focus();
+       		}
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(demo2.domNode);
+   	dojo.place('<label for="sid">Doctor: </label>', dojo.byId('widget_demo2'), 'before');
+   	//Cargo contenido demo2
+   	wdemo.cdemo2();		
+	},
+	edemo1:function () {
+		demo1 = new dijit.form.ComboBox({
+        	type:"text",
+        	name:"demo1",
+        	id:"demo1",
+        	style:"width: 8em;",
+        	size:"10",
+       	required: true,
+       	uppercase:true,
+			searchAttr:"descripcion",
+       	missingMessage:"Falta origen",
+       	labelAttr: "etiqueta",
+         labelType: "html",
+       	onChange:function()
+       	{
+       		//console.log(padrePeticiones.vviejo);
+       		if( padrePeticiones.vviejo==null || padrePeticiones.vviejo=='' || ( typeof padrePeticiones.vviejo == 'undefined') || padrePeticiones.vviejo != demo1.get('value') )
+       		{		       		
+	       		demostopStore.fetch({
+		         		query: {demo1 : demo1.get('value') },
+		         		onComplete: function(items)
+		         		{
+		         			//console.log(items.length);
+		         			var demo5json = "{\"label\":\"id\",\"identifier\":\"id\",\"items\":[";
+		          			dojo.forEach(items,function(items2)
+			               {			               	
+			               	demo5Store.fetch({
+			               		query: {codigo : items2.filtro[0].split(":")[1] },
+					         		onComplete: function(items3)
+					         		{
+					         			if(items3.length>0)
+					          			{
+					          				demo5json += "{\"id\":\"";
+					          				demo5json += items3[0].id;
+					          				demo5json += "\",\"codigo\":\"";
+					          				demo5json += items3[0].codigo;
+					          				demo5json += "\",\"descripcion\":\"";
+					          				demo5json += items3[0].descripcion;
+					          				demo5json += "\",\"busqueda\":\"";
+					          				demo5json += items3[0].busqueda;
+					          				demo5json += "\",\"disco\":\"\",\"etiqueta\":\"";
+					          				demo5json += items3[0].etiqueta;
+					          				demo5json += "\"},";
+					          			}
+							         }
+			               	});		               			               		
+			               });
+								demo5json = demo5json.slice(0, -1);
+			               demo5json += "]}";
+								if( demo5json.length>43 )
+								{
+									//console.log(demo5json);
+			               	//console.log(demo5json.length);
+			               	var demo5storenew = new dojo.data.ItemFileReadStore({data: dojo.fromJson(demo5json)});		               	
+			               	if( demo5.get('store')=='' ) { demo5.store.close(); }
+								   demo5.set('store',demo5storenew);
+								   demo5._lastScrollTop=demo5.scrollTop;
+								}
+								else 
+								{
+									demo5.store.close();
+				   				demo5.set('store',demo5Store);
+				   				demo5._lastScrollTop=demo5.scrollTop;
+								}										               	
+				         }			    
+			   		}); 
+	       		if( demo1.get("value")==" " || demo1.get("value")=="" || demo1.get("value")==null )
+	        		{
+	           		padrePeticiones.limtipof();
+	        		}
+	        		else if( !isNaN(parseFloat(demo1.get("value"))) && isFinite(demo1.get("value")) )
+	        		{	
+	        			padrePeticiones.limtipof();
+	        			demo1Store.fetch({
+				         query: {codigo : demo1.get('value') },
+				         onComplete: function(items){
+				          if( items.length>0 )
+				          {			          	
+				          	tarifa=items[0].tarifa;
+				          	dojo.forEach(items,function(item){			          			                        
+									demo1.set('value',item.descripcion,false);
+									padrePeticiones.vviejo=item.descripcion;
+	                        tarjetasStore.fetch({
+							         query: { disco : item.disco[0] },
+							         onComplete: function(items2)
+							         {
+						                dojo.forEach(items2,function(item2)
+						                {	
+						                //console.log("1");					                	
+						                	wdemo.vdemo1(item2, demo1.get('value'));
+						                });
+							         }
+								   });  
+			                });
+		        			 }
+			             else
+			             {
+			             	
+			             }
+			            }			    
+					   });			 
+	        		}
+	        		else
+	        		{
+	        			padrePeticiones.limtipof();
+	        			demo1Store.fetch({
+				         query: {descripcion : demo1.get('value') },
+				         onComplete: function(items){
+				          if( items.length>0 )
+				          {
+				          	
+				          	tarifa=items[0].tarifa;
+				          	dojo.forEach(items,function(item){
+				          		console.log(item);	                        
+									demo1.set('value',item.descripcion,false);
+									padrePeticiones.vviejo=item.descripcion;
+	                        tarjetasStore.fetch({
+							         query: { disco : item.disco[0] },
+							         onComplete: function(items2)
+							         {
+						                dojo.forEach(items2,function(item2)
+						                {
+						                	//console.log("2");					                	
+						                	wdemo.vdemo1(item2, demo1.get('value'));
+						                });
+							         }
+								   }); 
+			                });
+		        			 }
+			             else
+			             {
+			             	
+			             }
+			            }			    
+					   });		
+	        		}
+        		}
+        		else 
+        		{
+        			//console.log("Valor no ha cambiado");	
+        		}
+       	},
+       	onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			demo9.focus();
+       			if( demo1.get('value')==padrePeticiones.olddemo1 )
+       			{
+       				f1.set('value',padrePeticiones.numtar,false);
+       			}
+       			padrePeticiones.olddemo1=null;
+       			padrePeticiones.numtar=null; 
+       		}
+       		/*if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+		         Barray[0]=demo1.get("value");
+       			wbusc.settipo("demo1",Barray);
+       			wbusc.mostrar();
+       		}*/
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(demo1.domNode);
+   	dojo.place('<label for="demo1">Origen: </label>', dojo.byId('widget_demo1'), 'before');
+		//Cargo contenido demo1
+   	wdemo.cdemo1();
+   	wdemo.cdemostop();	
+   },
+   edemo9:function () {	   			
+		demo9 = new dijit.form.ComboBox({
+         type:"text",
+        	name:"demo9",
+        	id:"demo9",
+        	style:"width: 8em;",
+        	size:"10",
+        	searchAttr:"descripcion",
+        	uppercase:true,
+       	required: false,
+			missingMessage:"Falta Origen Externo",
+			labelAttr: "etiqueta",
+         labelType: "html",
+			onChange:function()
+       	{
+       		wdemo.vdemo9();       
+       	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					demo3.focus();
+       		}
+				/*if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+		         Barray[0]=demo9.get("value");
+       			wbusc.settipo("demo9",Barray);
+       			wbusc.mostrar();
+       		}*/
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(demo9.domNode);
+		dojo.place('<label for="demo9">Origen Ext.: </label>', dojo.byId('widget_demo9'), 'before');
+   	//Cargo contenido demo9
+   	wdemo.cdemo9();			
+   },
+	edemo3:function ()	{
+		demo3 = new dijit.form.ComboBox({
+        	type:"text",
+        	name:"demo3",
+        	id:"demo3",
+        	style:"width: 8em;",
+        	size:"10",
+        	searchAttr:"descripcion",
+       	required: false,
+       	uppercase:true,
+			missingMessage:"Falta empresa",
+			labelAttr: "etiqueta",
+         labelType: "html",
+			onChange:function()
+       	{
+       		wdemo.vdemo3();
+       	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					demo5.focus();
+       		}
+       		/*if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+		         Barray[0]=demo3.get("value");
+       			wbusc.settipo("demo3",Barray);
+       			wbusc.mostrar();
+       		}*/
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(demo3.domNode);
+   	dojo.place('<label for="demo3">Empresa: </label>', dojo.byId('widget_demo3'), 'before');
+   	//Cargo contenido demo3
+   	wdemo.cdemo3();		
+   },
+   edemo5:function () {		
+		demo5 = new dijit.form.ComboBox({
+        	type:"text",
+        	name:"demo5",
+        	id:"demo5",
+        	style:"width: 8em;",
+        	size:"10",
+       	searchAttr:"descripcion",
+       	required: true,
+       	uppercase:true,
+       	missingMessage:"Falta procedencia",
+       	labelAttr: "etiqueta",
+         labelType: "html",
+       	onChange:function()
+       	{
+       		wdemo.vdemo5();
+       	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					demo4.focus();
+       		}
+       		/*if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+		         Barray[0]=demo5.get("value");
+       			wbusc.settipo("demo5",Barray);
+       			wbusc.mostrar();
+       		}*/
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(demo5.domNode);
+		dojo.place('<label for="demo5">Procedencia: </label>', dojo.byId('widget_demo5'), 'before');
+   	//Carga datos demo5
+   	wdemo.cdemo5();
+	},
+	edemo4:function ()	{
+		demo4 = new dijit.form.ComboBox({
+        	type:"text",
+        	name:"demo4",
+        	id:"demo4",
+        	style:"width: 8em;",
+        	size:"10",
+       	searchAttr:"descripcion",
+       	required: false,
+       	uppercase:true,
+       	missingMessage:"Falta Referencia",
+       	labelAttr: "etiqueta",
+         labelType: "html",
+       	onChange:function()
+       	{
+       		wdemo.vdemo4();
+       	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					extra0.focus();
+       		}
+       		/*if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+		         Barray[0]=demo4.get("value");
+       			wbusc.settipo("demo4",Barray);
+       			wbusc.mostrar();
+       		}*/
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(demo4.domNode);
+   	dojo.place('<label for="demo4">Referencia: </label>', dojo.byId('widget_demo4'), 'before');
+   	//Carga datos demo4
+   	wdemo.cdemo4();		
+   },	
+   eextra0:function () {   
+		extra0 = new dijit.form.ValidationTextBox({
+	        	type:"text",
+	        	name:"extra0",
+	        	id:"extra0",
+	        	style:"width: 12em;",
+	        	required:false,
+				uppercase:true,
+				//regExp:'\\d{9}',
+				invalidMessage: "Introducir solo números y maximo 8",
+	        	missingMessage:"Falta telefono",
+				onKeyUp:function(event)
+	       	{
+	       		if(event.keyCode==13)
+	       		{
+	       			if( f1.get('disabled')==true )
+	          		{
+							demo8.focus();          		
+	          		}
+	          		else
+	          		{
+							f1.focus();
+						}
+	       		}
+	       	}
+	   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(extra0.domNode);
+   	dojo.place('<label for="extra0">Teléfono: </label>', dojo.byId('widget_extra0'), 'before');
+	},
+	eextra4:function () {   
+		extra4 = new dijit.form.ValidationTextBox({
+	        	type:"text",
+	        	name:"extra4",
+	        	id:"extra4",
+	        	style:"width: 12em;",
+	        	required:false,
+				uppercase:true,
+				//regExp:"\\[\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b]+",
+				regExpGen: dojox.validate.regexp.emailAddress,
+				invalidMessage: "Introducir e-mail correcto",
+	        	missingMessage:"Falta e-mail",
+	        	onChange:function()
+       		{
+       			if( extra4.get("value") === '' || extra4.get("value") === null)
+					{
+	       			
+					}
+					else 
+					{
+						dialogo.set('content','¡¡¡¡ATENCIÓN!!!<br>Es necesario tener la autorización del paciente firmada<br>')
+					   dialogo.show();
+					}						
+       		},
+				onKeyUp:function(event)
+	       	{
+	       		if(event.keyCode==13)
+	       		{
+	       			if( comana.get('disabled')==true )
+	          		{
+							prueba.focus();          		
+	          		}
+	          		else
+	          		{
+							prueba.focus();
+						}
+	       		}
+	       	}
+	   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(extra4.domNode);
+   	dojo.place('<label for="extra4"> e-mail: </label>', dojo.byId('widget_extra4'), 'before');
+	},
+	ef1:function ()	{		
+		f1 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"f1",
+        	id:"f1",
+        	required:false,
+        	uppercase:true,
+        	disabled:true,
+        	style:"width: 10em;",
+        	onBlur: function () 
+        	{
+        		/*if( f1.get("value").length<1 )
+        		{
+					f1.set("value",vanti);        		
+        		}*/	
+        	},
+        	onFocus: function()
+        	{       		
+        		//vanti=f1.get("value");
+        		wextra.vf1(1);
+				dojo.byId('f1').select();
+        		
+        	},
+        	onChange: function()
+        	{
+				//Validamos en funcion del tipo de tarjeta
+				//standby.show();
+				wextra.vf1(2);
+				//standby.hide();
+
+        	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			wextra.vf1(3);
+       		}
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(f1.domNode);
+   },
+	ef2:function () {
+		f2 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"f2",
+        	id:"f2",
+        	required:false,
+        	uppercase:true,
+			disabled:true,
+        	style:"width: 8em; margin-left: 0.50em",
+        	onBlur: function () 
+        	{
+        		/*if( f2.get("value").length<1 )
+        		{
+					f2.set("value",vanti);        		
+        		}*/	
+        	},
+        	onFocus: function()
+        	{
+        		//vanti=f2.get("value");
+        		wextra.vf2(1);
+        		dojo.byId('f2').select();
+        	},
+        	onChange: function()
+        	{
+				wextra.vf2(2);
+				    	
+        	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			wextra.vf2(3);
+       		}
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(f2.domNode);
+   },
+   ef3:function () {
+		f3 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"f3",
+        	id:"f3",
+        	required:false,
+        	uppercase:true,
+			disabled:true,
+        	style:"width: 8em; margin-left: 0.50em",
+        	onBlur: function () 
+        	{
+        		/*if( f3.get("value").length<1 )
+        		{
+					f3.set("value",vanti);        		
+        		}*/	
+        	},
+        	onFocus: function()
+        	{
+        		//vanti=f3.get("value");
+        		wextra.vf3(1);
+        		dojo.byId('f3').select();
+        	},
+        	onChange: function()
+        	{
+				wextra.vf3(2);				       	
+        	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			wextra.vf3(3);
+       		}
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(f3.domNode);
+   },
+   ef4:function () {
+   	f4 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"f4",
+        	id:"f4",
+        	required:false,
+        	uppercase:true,
+        	disabled:true,
+        	style:"width: 8em; margin-left: 0.50em",
+        	onBlur: function () 
+        	{
+        		/*if( f4.get("value").length<1 )
+        		{
+					f4.set("value",vanti);        		
+        		}*/
+        	},
+        	onFocus: function()
+        	{
+        		//vanti=f4.get("value");
+        		wextra.vf4(1);
+        		dojo.byId('f4').select();
+        	},
+        	onChange: function()
+        	{
+				wextra.vf4(2);				
+        	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			wextra.vf4(3);
+       		}
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(f4.domNode);
+	},
+	ef5:function () {
+   	f5 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"f5",
+        	id:"f5",
+        	required:false,
+        	uppercase:true,
+        	disabled:true,
+        	style:"width: 8em;",
+        	onBlur: function () 
+        	{
+        		/*if( f5.get("value").length<1 )
+        		{
+					f5.set("value",vanti);        		
+        		}*/	
+        	},
+        	onFocus: function()
+        	{
+        		//vanti=f5.get("value");
+        		wextra.vf5(1);
+        		dojo.byId('f5').select();
+        	},
+        	onChange: function()
+        	{
+				wextra.vf5(2);
+        	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			wextra.vf5(3);
+       		}
+       	}	        	
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(f5.domNode);
+	},
+	ef6:function () {
+   	f6 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"f6",
+        	id:"f6",
+        	required:false,
+        	uppercase:true,
+        	disabled:true,
+        	style:"width: 8em; margin-left: 0.50em",
+        	onBlur: function () 
+        	{
+        		/*if( f6.get("value").length<1 )
+        		{
+					f6.set("value",vanti);        		
+        		}*/	
+        	},
+        	onFocus: function()
+        	{
+        		//vanti=f6.get("value");
+        		wextra.vf6(1);
+        		dojo.byId('f6').select();
+        	},
+        	onChange: function()
+        	{
+				wextra.vf6(2);
+        	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			wextra.vf6(3);
+       		}
+       	}	        	
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(f6.domNode);
+	},
+	ef7:function () {
+   	f7 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"f7",
+        	id:"f7",
+        	required:false,
+        	uppercase:true,
+        	disabled:true,
+        	style:"width: 8em; margin-left: 0.50em",
+        	onBlur: function () 
+        	{
+        		/*if( f7.get("value").length<1 )
+        		{
+					f7.set("value",vanti);        		
+        		}*/	
+        	},
+        	onFocus: function()
+        	{
+        		//vanti=f7.get("value");
+        		wextra.vf7(1);
+				dojo.byId('f7').select();
+        	},
+        	onChange: function()
+        	{
+				wextra.vf7(2);
+        	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			wextra.vf7(3);
+       		}
+       	}	        	
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(f7.domNode);
+	},
+	ef8:function () {
+   	f8 = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"f8",
+        	id:"f8",
+        	required:false,
+        	uppercase:true,
+        	disabled:true,
+        	style:"width: 8em; margin-left: 0.50em",
+        	onBlur: function () 
+        	{
+        		/*if( f8.get("value").length<1 )
+        		{
+					f8.set("value",vanti);        		
+        		}*/	
+        	},
+        	onFocus: function()
+        	{
+        		//vanti=f8.get("value");
+        		wextra.vf8(1);
+				dojo.byId('f8').select();
+        	},
+        	onChange: function()
+        	{
+				wextra.vf8(2);				     	
+        	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					wextra.vf8(3);
+       		}
+       	}	        	
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(f8.domNode);
+	},
+	eextra1:function () {
+		extra1 = new dijit.form.ValidationTextBox({
+        	type:"hidden",
+        	name:"extra1",
+        	id:"extra1",
+        	required:false,
+        	uppercase:true,
+        	style:"width: 5em;",
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					demo8.focus();
+       		}
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(extra1.domNode);
+   	//dojo.place('<label for="extra1"></label>', dojo.byId('widget_extra1'), 'before');
+   },
+   epwd:function () {
+   	pwd = new dijit.form.ValidationTextBox({
+        	type:"text",
+        	name:"epwd",
+        	id:"epwd",
+        	required:false,
+        	uppercase:true,
+        	style:"width: 5em;",
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+       			if( pwd.get('value').length<1 )
+					{
+						wutil.clave(pwd);					
+					}
+					demo8.focus();					
+       		}
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(pwd.domNode);
+   	dojo.place('<label for="epwd"> R. Web:</label>', dojo.byId('widget_epwd'), 'before');
+   },
+   edemo8:function () {
+		demo8 = new dijit.form.ComboBox({
+        	type:"text",
+        	name:"demo8",
+        	id:"demo8",
+        	style:"width: 8em;",
+        	size:"10",
+       	searchAttr:"descripcion",
+       	required: false,
+       	uppercase:true,
+			labelAttr: "etiqueta",
+      	labelType: "html",
+      	onChange:function()
+       	{
+	       	wdemo.vdemo8();
+       	},
+			onKeyUp:function(event)
+       	{
+       		if(event.keyCode==13)
+       		{
+					extra4.focus();
+       		}
+       		/*if(event.keyCode==113)
+       		{
+       			//Elemento 0->contenido de campo
+       			//Elemento 1->devolución de seleccion
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+       			Barray = [];
+		         Barray[0]=demo8.get("value");
+       			wbusc.settipo("demo8",Barray);
+       			wbusc.mostrar();
+       		}*/
+       	}
+   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(demo8.domNode);
+   	dojo.place('<label for="demo8"> Urgente: </label>', dojo.byId('widget_demo8'), 'before');
+   	//Carga demo8
+   	wdemo.cdemo8();		
+	},
+	edemo0:function () {
+		demo0 = new dijit.form.ValidationTextBox({
+	        	type:"hidden",
+	        	name:"demo0",
+	        	id:"demo0",
+	        	style:"width: 8em;",
+	        	size:"10",
+          	required: false,
+          	uppercase:true,
+          	missingMessage:"Falta episodio",
+				onKeyUp:function(event)
+	       	{
+	       		if(event.keyCode==13)
+	       		{
+						comana.focus();
+	       		}
+	       		/*if(event.keyCode==113)
+	       		{
+	       			//Elemento 0->contenido de campo
+	       			//Elemento 1->devolución de seleccion
+	       			if (typeof Barray != 'undefined')
+				 		{
+	       				while (Barray.length) { Barray.pop(); }
+	       			}
+	       			Barray = [];
+			         Barray[0]=demo0.get("value");
+	       			wbusc.settipo("demo0",Barray);
+	       			wbusc.mostrar();
+	       		}*/
+	       	}
+	   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(demo0.domNode);
+   	//dojo.place('<label for="demo0"> </label>', dojo.byId('widget_demo0'), 'before');
+	},
+	ecomana:function () {
+		comana = new dijit.form.SimpleTextarea({
+	        	name:"comana",
+	        	id:"comana",
+	        	rows: "5",
+        		cols: "30",
+        		style: "width:auto;",
+				uppercase:true,
+				onKeyUp:function(event)
+	       	{
+	       		if(event.keyCode==13)
+	       		{
+						compac.focus();
+	       		}
+	       	}
+	   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(comana.domNode);
+		dojo.place('<label for="comana">Com.Ana.:</label>', dojo.byId('comana'), 'before');
+	},
+	ecompac:function () {
+		compac = new dijit.form.SimpleTextarea({
+	        	name:"compac",
+	        	id:"compac",
+	        	rows: "5",
+        		cols: "30",
+        		style: "width:auto;",
+        		uppercase:true,
+				onKeyUp:function(event)
+	       	{
+	       		if(event.keyCode==13)
+	       		{
+						prueba.focus();
+	       		}
+	       	}
+	   	}, dojo.doc.createElement('input'));
+   	form.domNode.appendChild(compac.domNode);
+		dojo.place('<label for="compac">Com.Pac.:</label>', dojo.byId('compac'), 'before');
+	},
+	eprueba:function () {
+ 		prueba = new dijit.form.ComboBox({
+			name:"eprueba",
+   		id:"eprueba",
+   		size:"10",
+   		style: "width:25%;",
+       	searchAttr: "codigo",
+       	required: false,
+			uppercase:true,
+			labelAttr: "etiqueta",
+         labelType: "html",
+       	onChange: function()
+       	{                         
+        		if( prueba.get("value")==" " || prueba.get("value")=="" || prueba.get("value")==null )
+        		{
+           		//console.log("1");
+        		}
+        		else if( !isNaN(parseFloat(prueba.get("value"))) && isFinite(prueba.get("value")) )
+        		{
+					//Traduzco opcional a Prueba
+					pruebasStore.fetch({
+			         query: {opcional : prueba.get('value') },
+			         onComplete: function(items){
+				          wextra.vpruebas(items);
+			         }			    
+				   });        		
+        		}
+        		else
+        		{
+					pruebasStore.fetch({
+			         query: {codigo : prueba.get('value') },
+			         onComplete: function(items){
+				          wextra.vpruebas(items);
+			         }			    
+				   });              		
+        		}
+       	},
+       	onKeyUp:function(event)
+       	{
+       		
+       		/*if(event.keyCode==113)
+       		{
+       			if (typeof Barray != 'undefined')
+			 		{
+       				while (Barray.length) { Barray.pop(); }
+       			}
+					Barray = [];
+		         Barray[0]=prueba.get("value");
+       			wbusc.settipo("pruebas",Barray);
+       			wbusc.mostrar();
+       		}*/
+       		if(event.keyCode==171) //+ -> @
+       		{
+       			//console.log("Tecla:"+event.keyCode);
+       			if( prueba.get("value").length>0 )
+       			{
+						prueba.set("value",prueba.get("value").slice(0, -1)+"@");
+					}
+					else
+					{
+						prueba.set("value","@");
+					}
+       		}
+       		if(event.keyCode==173) //- -> _
+       		{
+       			//console.log("Tecla:"+event.keyCode);
+					if( prueba.get("value").length>0 )
+       			{
+						prueba.set("value",prueba.get("value").slice(0, -1)+"_");
+					}
+					else
+					{
+						prueba.set("value","_");
+					}
+       		} 
+       		if(event.keyCode==17) //- -> _
+       		{
+       			pruebasStore.fetch({
+			         query: { 
+			         	codigo : prueba.get("value"),
+			         	seccion : "MICRO" },
+			         onComplete: function(items2)
+			         {
+		                dojo.forEach(items2,function(item2)
+		                {					                	
+		                		if( padrePeticiones.anterior==prueba.get("value"))
+			       				{
+			       					pedidas.set('value',prueba.get("value")+":"+padrePeticiones.ind+','+pedidas.get('value'),false);
+			       					padrePeticiones.ind++;
+			       				}
+			       				else
+			       				{
+			       					padrePeticiones.ind=1;
+			       					pedidas.set('value',prueba.get("value")+":"+padrePeticiones.ind+','+pedidas.get('value'),false);
+			       					padrePeticiones.ind++;
+										padrePeticiones.anterior=prueba.get("value");
+			       				}
+		                });
+			         }
+				   }); 			
+       		}       		
+       	}
+ 		});
+		form.domNode.appendChild(prueba.domNode);
+		dojo.place('<label for="eprueba">Pruebas: </label>', dojo.byId('widget_eprueba'), 'before');
+	   wextra.cpruebas();	   
+	},
+	epedidas:function () {
+		pedidas = new dojox.form.ListInput({
+        		name:"epedidas",
+   			id:"epedidas",
+   			useAnim:false,
+   			style: "width:90%;",
+   			readOnlyInput:true,
+   			required: true,
+				uppercase:true
+    		});
+    	form.domNode.appendChild(pedidas.domNode);
+		dojo.place('<label for="epedidas">Solicitidas:</label>', dojo.byId('epedidas'), 'before');
+	},
+	baceptar:function () {
+		aceptar = new dijit.form.Button({
+			label: "Aceptar",
+			type: "button",
+			onClick: function()
+			{
+				wextra.vform();
+	      }
+		});
+		form.domNode.appendChild(aceptar.domNode);
+	},
+	bcancelar:function () {
+		cancelar = new dijit.form.Button({
+			label: "Cancelar",
+			type: "button",
+			onClick: function(){
+	        	   padrePeticiones.limpiar();
+	        }
+		});
+		form.domNode.appendChild(cancelar.domNode);
+	},
+	bimprimir:function () {
+		imprimir = new dijit.form.Button({
+			label: "Imprimir",
+			type: "button",
+			onClick: function()
+			{				
+				wextra.vvolex();
+	      }
+		});
+		form.domNode.appendChild(imprimir.domNode);
+	},
+	espera: function()
+	{
+		standby = new dojox.widget.Standby({
+			target: "formsol",
+          color: "#333",
+          opacity: 0 
+        });			
+	   document.body.appendChild(standby.domNode);
+	   standby.startup();
+	},
+   buscar: function()
+   {
+		wbusc = new dbuscar();
+		wbusc.inicio();   
+   },
+   limpiar: function () 
+   {
+   	form.reset();
+   	fecha.set('displayedValue',wutil.hoy(),false);
+   },
+   sonido: function()
+   {
+   	beep=new Audio('/audio.mp3');
+   },
+   util: function() {
+		wutil = new dutilp();
+		wdemo = new ddemo();
+		wextra = new dextra();
+		wsoap = new dxml();
+	},
+	settipof: function( campo, tipo, longitud ) 
+	{
+		switch( campo )
+		{
+			case 1:
+				tipof1=tipo;
+				longitudf1=longitud;
+				break;
+			case 2:
+				tipof2=tipo;
+				longitudf2=longitud;
+				break;
+			case 3:
+				tipof3=tipo;
+				longitudf3=longitud;
+				break;
+			case 4:
+				tipof4=tipo;
+				longitudf4=longitud;
+				break;
+			case 5:
+				tipof5=tipo;
+				longitudf5=longitud;
+				break;		
+			case 6:
+				tipof6=tipo;
+				longitudf6=longitud;
+				break;
+			case 7:
+				tipof7=tipo;
+				longitudf7=longitud;
+				break;
+			case 8:
+				tipof8=tipo;
+				longitudf8=longitud;
+				break;
+		}
+	},
+	gettipof: function( campo ) 
+	{
+		switch( campo )
+		{
+			case 1:
+				 return tipof1;
+				break;
+			case 2:
+				return tipof2;
+				break;
+			case 3:
+				return tipof3;
+				break;
+			case 4:
+				return tipof4;
+				break;
+			case 5:
+				return tipof5;
+				break;
+			case 6:
+				return tipof6;
+				break;
+			case 7:
+				return tipof7;
+				break;
+			case 8:
+				return tipof8;
+				break;		
+		}
+	},
+	getlongitudf: function( campo ) 
+	{
+		switch( campo )
+		{
+			case 1:
+				 return longitudf1;
+				break;
+			case 2:
+				return longitudf2;
+				break;
+			case 3:
+				return longitudf3;
+				break;
+			case 4:
+				return longitudf4;
+				break;
+			case 5:
+				return longitudf5;
+				break;
+			case 6:
+				return longitudf6;
+				break;
+			case 7:
+				return longitudf7;
+				break;
+			case 8:
+				return longitudf8;
+				break;		
+		}
+	},
+	limtipof: function() 
+	{
+		//console.log("limpio");
+		tipof1="";
+		tipof2="";
+		tipof3="";
+		tipof4="";
+		tipof5="";
+		tipof6="";
+		tipof7="";
+		tipof8="";
+		longitudf1="";
+		longitudf2="";
+		longitudf3="";
+		longitudf4="";
+		longitudf5="";
+		longitudf6="";
+		longitudf7="";
+		longitudf8="";
+		dojo.query("label[for=f1]")[0].innerHTML = "";
+		dojo.query("label[for=f2]")[0].innerHTML = "";
+		dojo.query("label[for=f3]")[0].innerHTML = "";
+		dojo.query("label[for=f4]")[0].innerHTML = "";
+		dojo.query("label[for=f5]")[0].innerHTML = "";
+		dojo.query("label[for=f6]")[0].innerHTML = "";
+		dojo.query("label[for=f7]")[0].innerHTML = "";
+		dojo.query("label[for=f8]")[0].innerHTML = "";
+		f1.set('disabled',true);
+   	f1.set('value','',true);
+   	f2.set('disabled',true);
+   	f2.set('value','',true);
+		f3.set('disabled',true);
+   	f3.set('value','',true);
+		f4.set('disabled',true);
+   	f4.set('value','',true);
+		f5.set('disabled',true);
+   	f5.set('value','',true); 
+   	f6.set('disabled',true);
+   	f6.set('value','',true);
+		f7.set('disabled',true);
+   	f7.set('value','',true); 
+   	f8.set('disabled',true);
+   	f8.set('value','',true);
+		f1.set("regExpGen",".*");
+	   f1.set("invalidMessage","");
+	   f1.reset();	
+	   f1.validate();	
+	   f1.set("state","Normal");
+   	f2.set("regExpGen",".*");
+	   f2.set("invalidMessage","");
+	   f2.reset();
+		f2.validate();
+   	f3.set("regExpGen",".*");
+	   f3.set("invalidMessage","");
+	   f3.reset();
+	   f3.validate();
+   	f4.set("regExpGen",".*");
+	   f4.set("invalidMessage","");
+	   f4.reset();
+	   f4.validate();
+   	f5.set("regExpGen",".*");
+	   f5.set("invalidMessage","");
+	   f5.reset();
+	   f5.validate();
+	   
+   	f6.set("regExpGen",".*");
+	   f6.set("invalidMessage","");
+	   f6.reset();
+	   f6.validate();
+   	f7.set("regExpGen",".*");
+	   f7.set("invalidMessage","");
+	   f7.reset();
+	   f7.validate();
+   	f8.set("regExpGen",".*");
+	   f8.set("invalidMessage","");
+	   f8.reset();
+	   f8.validate();
+	},
+	inicio: function () 
+	{
+		this.util();
+		this.contenedor();
+		this.dform();
+		this.espera();
+		this.esid();
+		this.efecha();
+		this.epid();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.eape1();
+		this.eape2();
+		this.enombre();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.efnac();
+		this.eedad();
+		this.esexo();
+		this.edemo2();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.edemo1();
+		this.edemo9();
+		this.edemo3();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.edemo5();
+		this.edemo4();
+		this.eextra0();
+		this.eextra1();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.ef1();
+		this.ef2();
+		this.ef3();
+		this.ef4();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.ef5();
+		this.ef6();
+		this.ef7();
+		this.ef8();
+		dojo.place('<label for="f1"></label>', dojo.byId('widget_f1'), 'before');
+   	dojo.place('<label for="f2"></label>', dojo.byId('widget_f2'), 'before');
+   	dojo.place('<label for="f3"></label>', dojo.byId('widget_f3'), 'before');
+   	dojo.place('<label for="f4"></label>', dojo.byId('widget_f4'), 'before');
+		dojo.place('<label for="f5"></label>', dojo.byId('widget_f5'), 'before');
+		dojo.place('<label for="f6"></label>', dojo.byId('widget_f6'), 'before');
+		dojo.place('<label for="f7"></label>', dojo.byId('widget_f7'), 'before');
+		dojo.place('<label for="f8"></label>', dojo.byId('widget_f8'), 'before');
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.epwd();
+		this.edemo8();
+		this.eextra4();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.edemo0();
+		this.ecomana();
+		this.ecompac();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.eprueba();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.epedidas();
+		form.domNode.appendChild(dojo.doc.createElement("br"));
+		this.baceptar();
+		this.bcancelar();
+		this.bimprimir();
+		this.dinfo();
+		cp1.startup();
+		this.buscar();
+		this.sonido();
+	}
+}
+);
